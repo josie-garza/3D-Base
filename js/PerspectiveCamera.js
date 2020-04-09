@@ -22,7 +22,7 @@ class PerspectiveCamera extends UniformProvider {
 
         this.rotationMatrix = new Mat4();
         this.viewProjMatrix = new Mat4();
-        this.rayDirMatrix = new Vec4();
+        this.rayDirMatrix = new Mat4();
         this.update();
 
         this.addComponentsAndGatherUniforms(...programs);
@@ -93,7 +93,8 @@ class PerspectiveCamera extends UniformProvider {
         translate(this.position).
         invert();
 
-        this.rayDirMatrix = new Vec4(this.position.x, this.position.y, 0.9999, 1.0);
+        this.rayDirMatrix.
+        set(this.viewProjMatrix);
 
         const yScale = 1.0 / Math.tan(this.fov * 0.5);
         const xScale = yScale / this.aspect;
