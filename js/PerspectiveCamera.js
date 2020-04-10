@@ -93,9 +93,6 @@ class PerspectiveCamera extends UniformProvider {
         translate(this.position).
         invert();
 
-        this.rayDirMatrix.
-        set(this.viewProjMatrix);
-
         const yScale = 1.0 / Math.tan(this.fov * 0.5);
         const xScale = yScale / this.aspect;
         const f = this.farPlane;
@@ -106,6 +103,10 @@ class PerspectiveCamera extends UniformProvider {
             0, 0, (n + f) / (n - f), -1,
             0, 0, 2 * n * f / (n - f), 0));
 
+        this.rayDirMatrix.set().
+        translate(this.position).
+        mul(this.viewProjMatrix).
+        invert();
     }
 
     setAspectRatio(ar) {
