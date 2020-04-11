@@ -10,10 +10,13 @@ class Scene extends UniformProvider {
 
         this.fsTextured = new Shader(gl, gl.FRAGMENT_SHADER, "textured-fs.glsl");
         this.vsTextured = new Shader(gl, gl.VERTEX_SHADER, "textured-vs.glsl");
+        this.fsProcedural = new Shader(gl, gl.FRAGMENT_SHADER, "procedural-fs.glsl");
         this.fsBackground = new Shader(gl, gl.FRAGMENT_SHADER, "background-fs.glsl");
         this.vsBackground = new Shader(gl, gl.VERTEX_SHADER, "background-vs.glsl");
         this.texturedProgram = new TexturedProgram(gl, this.vsTextured, this.fsTextured);
         this.programs.push(this.texturedProgram);
+        this.proceduralProgram = new TexturedProgram(gl, this.vsTextured, this.fsProcedural);
+        this.programs.push(this.proceduralProgram);
         this.backgroundProgram = new TexturedProgram(gl, this.vsBackground, this.fsBackground);
         this.programs.push(this.backgroundProgram);
 
@@ -36,6 +39,15 @@ class Scene extends UniformProvider {
         this.background = new GameObject(this.backgroundMesh);
         this.background.update = function() {};
         this.gameObjects.push(this.background);
+
+        this.blockMaterial = new Material(this.proceduralProgram);
+        this.blockMaterials = [];
+        this.blockMaterials.push(this.blockMaterial);
+        this.blockMesh = new MultiMesh(gl, "media/box.json", this.blockMaterials);
+        this.block = new GameObject(this.blockMesh);
+        this.block.scale.set(0.3, 0.3, 0.3);
+        this.block.position.set(1, -0.5, 2);
+        this.gameObjects.push(this.block);
 
         this.bodyMaterial = new Material(this.texturedProgram);
         this.bodyMaterial.colorTexture.set(new Texture2D(gl, "media/slowpoke/YadonDh.png"))
