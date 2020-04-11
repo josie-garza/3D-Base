@@ -7,7 +7,9 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `#version 30
   } camera;
 
   void main(void) {
-    rayDir = vertexPosition * camera.rayDirMatrix;
-    rayDir.z = 0.99999;
+  	vec4 newpos = vertexPosition;
+  	newpos.z = 0.9999;
+  	gl_Position = newpos;
+    rayDir = newpos * camera.rayDirMatrix;
   }
 `;

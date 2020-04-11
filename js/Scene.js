@@ -6,6 +6,7 @@ class Scene extends UniformProvider {
         this.programs = [];
         this.gameObjects = [];
         this.pokemonMaterials = [];
+        this.colliders = [];
 
         this.fsTextured = new Shader(gl, gl.FRAGMENT_SHADER, "textured-fs.glsl");
         this.vsTextured = new Shader(gl, gl.VERTEX_SHADER, "textured-vs.glsl");
@@ -46,10 +47,77 @@ class Scene extends UniformProvider {
         this.avatar = new GameObject(this.pokemonMesh);
         this.gameObjects.push(this.avatar);
 
+        this.ballMaterial = new Material(this.texturedProgram);
+        this.ballMaterial.colorTexture.set(new Texture2D(gl, "media/ball2.png"));
+        this.ballMaterials = [];
+        this.ballMaterials.push(this.ballMaterial);
+        this.ballMesh = new MultiMesh(gl, "media/ball.json", this.ballMaterials);
+        this.ball = new GameObject(this.ballMesh);
+        this.ball1 = new GameObject(this.ballMesh);
+        this.gameObjects.push(this.ball);
+        this.gameObjects.push(this.ball1);
+        this.colliders.push(this.ball);
+        this.colliders.push(this.ball1);
+
+        this.ball.position.set(2, -0.5, 0);
+        this.ball.scale.set(0.5, 0.5, 0.5);
+        this.ball1.position.set(-2, -0.5, 0);
+        this.ball1.scale.set(0.5, 0.5, 0.5);
         this.avatar.position.set(0, -1, 0);
         this.avatar.scale.set(0.1, 0.1, 0.1);
-        this.avatar.yaw = 1.5;
 
+        const genericMove = function(t, dt) {
+            var acceleration = this.force.mul(this.invMass);
+            this.velocity.addScaled(dt, acceleration);
+            this.velocity.x *= 0.96;
+            this.velocity.z *= 0.96;
+            this.position.addScaled(dt, this.velocity);
+
+            //var factor = dt * 5;
+            //this.yaw += this.angularVelocity.x * factor;
+            //this.pitch += this.angularVelocity.z * factor;
+
+        };
+
+        const ballMove = function(t, dt) {
+        };
+
+        this.avatar.control = function(t, dt, keysPressed, colliders) {
+            this.thrust = 0;
+            if (keysPressed.UP) {
+                this.thrust += 10;
+            }
+            if (keysPressed.DOWN) {
+                this.thrust -= 10;
+            }
+            if (keysPressed.RIGHT) {
+                this.yaw -= 0.1;
+            }
+            if (keysPressed.LEFT) {
+                this.yaw += 0.1;
+            }
+            const ahead = new Vec3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
+            this.force = ahead.mul(this.thrust);
+
+            for (const other of colliders) {
+                if (other == this) {
+                    continue;
+                } else {
+                    const dist = this.position.minus(other.position);
+                    const dist2 = dist.dot(dist);
+                    var radius = this.scale.x + other.scale.x;
+                    radius *= 2.2;
+                    if (Math.sqrt(dist2) < radius) {
+                        //var rotationAxis = this.velocity.cross(new Vec3(0, 1, 0));
+                        //other.angularVelocity = this.velocity;
+                        other.force = this.velocity.direction();
+                    }
+                }
+            }
+        }
+        this.avatar.move = genericMove;
+        this.ball.move = genericMove;
+        this.ball1.move = genericMove;
         this.camera = new PerspectiveCamera(...this.programs);
         this.addComponentsAndGatherUniforms(...this.programs);
         gl.enable(gl.DEPTH_TEST);
@@ -81,13 +149,20 @@ class Scene extends UniformProvider {
         this.timeAtLastFrame = timeAtThisFrame;
         this.time = t;
 
-        this.camera.move(dt, keysPressed);
+        this.camera.move(dt, keysPressed, this.avatar);
 
         // clear the screen
         gl.clearColor(0.3, 0.0, 0.3, 1.0);
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        for (const gameObject of this.gameObjects) {
+            gameObject.control(t, dt, keysPressed, this.colliders);
+        }
+
+        for (const gameObject of this.gameObjects) {
+            gameObject.move(t, dt);
+        }
         for (const gameObject of this.gameObjects) {
             gameObject.update();
         }

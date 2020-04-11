@@ -3,15 +3,16 @@
 class PerspectiveCamera extends UniformProvider {
     constructor(...programs) {
         super("camera");
-        this.position = new Vec3(0, 0, 5);
+        this.position = new Vec3(0, -0.1, -5);
         this.roll = 0;
         this.pitch = 0;
-        this.yaw = 0;
+        this.yaw = -3;
 
         this.fov = 1.0;
         this.aspect = 1.0;
         this.nearPlane = 0.1;
         this.farPlane = 1000.0;
+        this.type = "S";
 
         this.speed = 1;
         this.isDragging = false;
@@ -43,7 +44,7 @@ class PerspectiveCamera extends UniformProvider {
         this.isDragging = false;
     }
 
-    move(dt, keysPressed) {
+    move(dt, keysPressed, avatar) {
         if (this.isDragging) {
             this.yaw -= this.mouseDelta.x * 0.002;
             this.pitch -= this.mouseDelta.y * 0.002;
@@ -56,23 +57,51 @@ class PerspectiveCamera extends UniformProvider {
             this.mouseDelta = new Vec2(0.0, 0.0);
         }
 
-        if (keysPressed.W) {
-            this.position.addScaled(this.speed * dt, this.ahead);
+        if (keysPressed.P) {
+            this.type = "P"
         }
+
+
         if (keysPressed.S) {
-            this.position.addScaled(-this.speed * dt, this.ahead);
+            this.type = "S"
         }
-        if (keysPressed.D) {
-            this.position.addScaled(this.speed * dt, this.right);
+
+        if (keysPressed.F) {
+            this.type = "F"
         }
-        if (keysPressed.A) {
-            this.position.addScaled(-this.speed * dt, this.right);
+
+        if (this.type == "P") {
+            this.position.x = avatar.position.x;
+            this.position.z = avatar.position.z - 5;
         }
-        if (keysPressed.E) {
-            this.position.addScaled(this.speed * dt, this.up);
+
+        if (this.type == "F") {
+            this.position.x = avatar.position.x;
+            this.position.z = avatar.position.z;
+            this.pitch = avatar.pitch;
+            this.roll = avatar.roll;
+            this.yaw = avatar.yaw - 3;
         }
-        if (keysPressed.Q) {
-            this.position.addScaled(-this.speed * dt, this.up);
+
+        if (this.type == "S") {
+            if (keysPressed.W) {
+                this.position.addScaled(this.speed * dt, this.ahead);
+            }
+            if (keysPressed.S) {
+                this.position.addScaled(-this.speed * dt, this.ahead);
+            }
+            if (keysPressed.D) {
+                this.position.addScaled(this.speed * dt, this.right);
+            }
+            if (keysPressed.A) {
+                this.position.addScaled(-this.speed * dt, this.right);
+            }
+            if (keysPressed.E) {
+                this.position.addScaled(this.speed * dt, this.up);
+            }
+            if (keysPressed.Q) {
+                this.position.addScaled(-this.speed * dt, this.up);
+            }
         }
 
         this.update();
