@@ -24,6 +24,7 @@ class PerspectiveCamera extends UniformProvider {
         this.rotationMatrix = new Mat4();
         this.viewProjMatrix = new Mat4();
         this.rayDirMatrix = new Mat4();
+        this.pitchOffset = 0;
         this.update();
 
         this.addComponentsAndGatherUniforms(...programs);
@@ -57,30 +58,47 @@ class PerspectiveCamera extends UniformProvider {
             this.mouseDelta = new Vec2(0.0, 0.0);
         }
 
-        if (keysPressed.P) {
-            this.type = "P"
+        if (keysPressed['3']) {
+            this.type = "P";
+            this.yaw = -3;
         }
 
-
-        if (keysPressed.S) {
-            this.type = "S"
+        if (keysPressed['1']) {
+            this.type = "F";
+            this.pitch = avatar.pitch;
         }
 
-        if (keysPressed.F) {
-            this.type = "F"
+        if (keysPressed['2']) {
+            this.type = "S";
+            this.yaw = -3;
         }
 
         if (this.type == "P") {
-            this.position.x = avatar.position.x;
-            this.position.z = avatar.position.z - 5;
+            this.position.x = avatar.position.x - 0.5;
+            this.position.z = avatar.position.z - 2.5;
+
+            if (keysPressed.D) {
+                this.yaw -= 0.1;
+            }
+            if (keysPressed.A) {
+                this.yaw += 0.1;
+            }
         }
 
         if (this.type == "F") {
-            this.position.x = avatar.position.x;
-            this.position.z = avatar.position.z;
-            this.pitch = avatar.pitch;
             this.roll = avatar.roll;
             this.yaw = avatar.yaw - 3;
+            this.position.x = avatar.position.x;
+            this.position.z = avatar.position.z;
+        }
+
+        if (this.type == "F" || this.type == "P") {
+            if (keysPressed.E) {
+                this.pitch -= 0.1;
+            }
+            if (keysPressed.Q) {
+                this.pitch += 0.1;
+            }
         }
 
         if (this.type == "S") {

@@ -64,8 +64,8 @@ class Scene extends UniformProvider {
         this.ballMaterials = [];
         this.ballMaterials.push(this.ballMaterial);
         this.ballMesh = new MultiMesh(gl, "media/ball.json", this.ballMaterials);
-        this.ball = new GameObject(this.ballMesh);
-        this.ball1 = new GameObject(this.ballMesh);
+        this.ball = new BallObject(this.ballMesh);
+        this.ball1 = new BallObject(this.ballMesh);
         this.gameObjects.push(this.ball);
         this.gameObjects.push(this.ball1);
         this.colliders.push(this.ball);
@@ -81,17 +81,9 @@ class Scene extends UniformProvider {
         const genericMove = function(t, dt) {
             var acceleration = this.force.mul(this.invMass);
             this.velocity.addScaled(dt, acceleration);
-            this.velocity.x *= 0.96;
-            this.velocity.z *= 0.96;
+            this.velocity.mul(0.96);
             this.position.addScaled(dt, this.velocity);
-
-            //var factor = dt * 5;
-            //this.yaw += this.angularVelocity.x * factor;
-            //this.pitch += this.angularVelocity.z * factor;
-
-        };
-
-        const ballMove = function(t, dt) {
+            this.orientation += (this.angularVelocity * dt * 2);
         };
 
         this.avatar.control = function(t, dt, keysPressed, colliders) {
@@ -120,9 +112,12 @@ class Scene extends UniformProvider {
                     var radius = this.scale.x + other.scale.x;
                     radius *= 2.2;
                     if (Math.sqrt(dist2) < radius) {
-                        //var rotationAxis = this.velocity.cross(new Vec3(0, 1, 0));
-                        //other.angularVelocity = this.velocity;
-                        other.force = this.velocity.direction();
+                        other.axis = this.velocity.cross(new Vec3(0, 1, 0));
+                        var factor = (-1 / other.scale.x);
+                        var length = this.velocity.length();
+                        other.angularVelocity = length * factor;
+                        this.velocity.mul(0.1);
+                        other.force = this.velocity.direction().mul(length * 8);
                     }
                 }
             }

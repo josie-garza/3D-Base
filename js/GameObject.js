@@ -17,7 +17,7 @@ class GameObject extends UniformProvider {
     this.velocity = new Vec3();
     this.invMass = 1;
     this.invAngularMass = 1;
-    this.angularVelocity = new Vec3();
+    this.angularVelocity = 0;
     this.angularDrag = 1;
 
     this.addComponentsAndGatherUniforms(mesh); // defines this.modelMatrix
